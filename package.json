@@ -1,0 +1,20 @@
+{
+  "name": "follow-redirect-url",
+  "version": "1.0.0",
+  "description": "A simple command-line utility that lets you follow redirects to see where http URLs end up. Useful for shortened URLs.",
+  "main": "bin.js",
+  "dependencies": {
+    "node-fetch": "^2.3.0"
+  },
+  "author": "Sayed Tauseef Naqvi",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/sthnaqvi/follow-redirect-url.git"
+  },
+  "preferGlobal": true,
+  "bin": {
+    "follow": "bin.js",
+    "follow-redirect-url": "bin.js"
+  }
+}
