@@ -12,6 +12,31 @@
     "type": "git",
     "url": "git://github.com/sthnaqvi/follow-redirect-url.git"
   },
+  "bugs": {
+    "url": "https://github.com/sthnaqvi/follow-redirect-url/issues"
+  },
+  "keywords": [
+    "cli",
+    "command",
+    "url",
+    "web",
+    "website",
+    "redirect",
+    "follow",
+    "URI",
+    "short",
+    "http",
+    "https",
+    "node",
+    "followRedirect",
+    "domain"
+  ],
+  "contributors": [
+    {
+      "name": "Sayed Tauseef Naqvi",
+      "email": "tauseef.naqvi786@gmail.com"
+    }
+  ],
   "preferGlobal": true,
   "bin": {
     "follow": "bin.js",
