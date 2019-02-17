@@ -2,17 +2,6 @@
 
 const fetch = require('node-fetch');
 fetch.Promise = Promise;
-const userAgent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.109 Safari/537.36';
-const metaRefreshPattern = '(CONTENT|content)=["\']0;[ ]*(URL|url)=(.*?)(["\']\s*>)';
-
-const fetchOptions = {
-    redirect: 'manual',
-    follow: 0,
-    headers: {
-        'User-Agent': userAgent,
-        'Accept': 'text/html'
-    }
-};
 
 const prefixWithHttp = url => {
     let pattern = new RegExp('^http');
@@ -22,11 +11,12 @@ const prefixWithHttp = url => {
 const isRedirect = status => status === 301 || status === 302 || status === 303 || status === 307 || status === 308;
 
 const extractMetaRefreshUrl = html => {
+    const metaRefreshPattern = '(CONTENT|content)=["\']0;[ ]*(URL|url)=(.*?)(["\']\s*>)';
     let match = html.match(metaRefreshPattern);
-    return match && match.length == 5 ? match[3] : null
+    return match && match.length == 5 ? match[3] : null;
 };
 
-const visit = url => new Promise((resolve, reject) => {
+const visit = (url, fetchOptions) => new Promise((resolve, reject) => {
     url = prefixWithHttp(url);
     fetch(url, fetchOptions).then(response => {
         if (isRedirect(response.status)) {
@@ -48,19 +38,30 @@ const visit = url => new Promise((resolve, reject) => {
     }).catch(reject);
 });
 
-const _startFollowingRecursively = (url, MAX_REDIRECT_LENGTH = 20, count = 1, visits = []) => new Promise((resolve, reject) => {
-    if (count > MAX_REDIRECT_LENGTH) {
-        return reject(`Exceeded max redirect depth of ${MAX_REDIRECT_LENGTH}`);
+const _startFollowingRecursively = (url, options = {}, count = 1, visits = []) => new Promise((resolve, reject) => {
+    //Default max_redirect_length = 20 and request_timeout = 10000 ms
+    const { max_redirect_length = 20, request_timeout = 10000 } = options;
+    const userAgent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.109 Safari/537.36';
+    const fetchOptions = {
+        redirect: 'manual',
+        follow: 0,
+        timeout: request_timeout,
+        headers: {
+            'User-Agent': userAgent,
+            'Accept': 'text/html'
+        }
     };
-    visit(url).then(response => {
+
+    if (count > max_redirect_length) {
+        return reject(`Exceeded max redirect depth of ${max_redirect_length}`);
+    };
+
+    visit(url, fetchOptions).then(response => {
         count++;
         visits.push(response);
         url = response.redirectUrl;
-        if (response.redirect) {
-            resolve(_startFollowingRecursively(url, MAX_REDIRECT_LENGTH, count, visits));
-        } else {
-            resolve(visits);
-        };
+        resolve(response.redirect ? _startFollowingRecursively(url, options, count, visits) : visits);
+
     }).catch(error => {
         visits.push({ url: url, redirect: false, status: `Error: ${error}` });
         resolve(visits);
@@ -69,7 +70,9 @@ const _startFollowingRecursively = (url, MAX_REDIRECT_LENGTH = 20, count = 1, vi
 
 /**
  * 
- * @param {String} url pass url like http://google.com
- * @param {Number} MAX_REDIRECT_LENGTH set max redirect limit Default 20
+ * @param {String} url - pass url like http://google.com
+ * @param {Object} options - optional configuration eg:{ max_redirect_length:20, request_timeout:10000 } 
+ * @param {Number} options.max_redirect_length - set max redirect limit Default 20
+ * @param {Number} options.request_timeout - request timeout in milliseconds Default 10000 ms
  */
-module.exports.startFollowing = (url, MAX_REDIRECT_LENGTH) => _startFollowingRecursively(url, MAX_REDIRECT_LENGTH);
+module.exports.startFollowing = (url, options) => _startFollowingRecursively(url, options);

@@ -32,13 +32,15 @@ describe('follow-redirect-url', () => {
   });
 
   it('should cope with up to 5 (pass 5 in fn argument) redirects', () => {
-    return follower.startFollowing('http://localhost:9000/5', 5).then(visits => {
+    const options = { max_redirect_length: 5 };
+    return follower.startFollowing('http://localhost:9000/5', options).then(visits => {
       expect(visits.length).to.equal(5);
     });
   });
 
   it('should fail if more than 5 (pass 5 in fn argument)  redirects', () => {
-    return follower.startFollowing('http://localhost:9000/6', 5).then(visits => {
+    const options = { max_redirect_length: 5 };
+    return follower.startFollowing('http://localhost:9000/6', options).then(visits => {
       expect().to.throw();
     }).catch(error => {
       expect(error).to.equal('Exceeded max redirect depth of 5');
