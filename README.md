@@ -1,6 +1,7 @@
 # follow-redirect-url
 
 [![npm version](https://badge.fury.io/js/follow-redirect-url.png)](https://badge.fury.io/js/follow-redirect-url)
+[![Build Status](https://travis-ci.org/sthnaqvi/follow-redirect-url.svg?branch=master)](https://travis-ci.org/sthnaqvi/follow-redirect-url)
 
 A simple command-line utility that lets you follow redirects to see where http URLs end up. Useful for shortened URLs.
 
