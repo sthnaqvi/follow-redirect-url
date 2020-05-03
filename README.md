@@ -40,7 +40,7 @@ npm install -save follow-redirect-url
 
 
 ---
-## Usage 
+## Usage
 
 ### CLI:
 
@@ -50,7 +50,8 @@ follow https://bit.ly/2X7gCIT
 
 ### Module:
 The first argument is a `url` string.
-``` js
+
+```js
 'use strict';
 
 const followRedirect = require('follow-redirect-url');
@@ -61,6 +62,22 @@ followRedirect.startFollowing('https://bit.ly/2X7gCIT').then(urls => {
     console.log(error)
 })
 ```
+
+Here's how to use this within a function to get the fully expanded version of a URL:
+
+```js
+const followRedirects = require("follow-redirect-url");
+
+async function expandUrl(url) {
+  const resolvedUrlList = await followRedirects.startFollowing(url, {
+    ignore_ssl_errors: true,
+  });
+
+  return resolvedUrlList[resolvedUrlList.length - 1].url;
+}
+
+```
+
 [back to top](#table-of-contents)
 
 
@@ -99,22 +116,24 @@ https://github.com/sthnaqvi/follow-redirect-url -> 200
 
 #### Under development
 
-### Module options:
-The second argument is an `options` object. Options are optional.
+### Module options
 
-- `max_redirect_length` - maximum redirection limit (default: `20`)
-- `request_timeout` - request timeout in milliseconds (default: `10000`).
-- 
+The second argument is an optional `options` object.
+
+- `max_redirect_length` - maximum redirection limit. Default: `20`
+- `request_timeout` - request timeout in milliseconds. Default: `10000`
+- `ignore_ssl_errors` - ignore certificate errors. Default: `false`
+
 ``` js
 'use strict';
 
 const followRedirect = require('follow-redirect-url');
 
  const options = {
-            max_redirect_length: 5,
-            request_timeout: 5000
-        };
-        
+    max_redirect_length: 5,
+    request_timeout: 5000
+};
+
 followRedirect.startFollowing('https://bit.ly/2X7gCIT', options).then(urls => {
     console.log(urls);
 }).catch(error => {
