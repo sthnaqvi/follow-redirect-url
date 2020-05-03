@@ -40,7 +40,11 @@ const visit = (url, fetchOptions) => new Promise((resolve, reject) => {
 
 const _startFollowingRecursively = (url, options = {}, count = 1, visits = []) => new Promise((resolve, reject) => {
     //Default max_redirect_length = 20 and request_timeout = 10000 ms
-    const { max_redirect_length = 20, request_timeout = 10000 } = options;
+    const {
+      max_redirect_length = 20,
+      request_timeout = 10000,
+      ignoreSslErrors = false,
+    } = options;
     const userAgent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.109 Safari/537.36';
     const fetchOptions = {
         redirect: 'manual',
@@ -49,7 +53,13 @@ const _startFollowingRecursively = (url, options = {}, count = 1, visits = []) =
         headers: {
             'User-Agent': userAgent,
             'Accept': 'text/html'
-        }
+        },
+        // https://stackoverflow.com/questions/52478069/node-fetch-disable-ssl-verification
+        agent: ignoreSslErrors
+            ? new https.Agent({
+                rejectUnauthorized: false,
+            })
+            : null,
     };
 
     if (count > max_redirect_length) {
@@ -69,10 +79,11 @@ const _startFollowingRecursively = (url, options = {}, count = 1, visits = []) =
 });
 
 /**
- * 
+ *
  * @param {String} url - pass url like http://google.com
- * @param {Object} options - optional configuration eg:{ max_redirect_length:20, request_timeout:10000 } 
+ * @param {Object} options - optional configuration eg:{ max_redirect_length:20, request_timeout:10000 }
  * @param {Number} options.max_redirect_length - set max redirect limit Default 20
  * @param {Number} options.request_timeout - request timeout in milliseconds Default 10000 ms
+ * @param {Number} options.ignore_ssl_errors - ignore all certificate errors Default false
  */
 module.exports.startFollowing = (url, options) => _startFollowingRecursively(url, options);
