@@ -1,7 +1,6 @@
 "use strict";
 
-const fetch = (...args) =>
-  import("node-fetch").then(({ default: fetch }) => fetch(...args));
+const fetch = require("node-fetch");
 
 const prefixWithHttp = (url) => {
   let pattern = new RegExp("^http");
