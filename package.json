@@ -4,14 +4,14 @@
   "description": "A simple command-line utility that lets you follow redirects to see where http URLs end up. Useful for shortened URLs.",
   "main": "lib.js",
   "dependencies": {
-    "node-fetch": "^3.0.0"
+    "node-fetch": "^2.6.1"
   },
   "devDependencies": {
-    "chai": "^4.3.4",
-    "codecov": "^3.8.3",
-    "express": "^4.17.1",
-    "mocha": "^9.1.3",
-    "nyc": "^15.1.0"
+    "chai": "^4.2.0",
+    "codecov": "^3.2.0",
+    "express": "^4.16.4",
+    "mocha": "^5.2.0",
+    "nyc": "^13.3.0"
   },
   "scripts": {
     "test": "nyc mocha --reporter spec --exit test && codecov"
