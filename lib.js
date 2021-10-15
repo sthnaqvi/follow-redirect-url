@@ -1,5 +1,5 @@
-"use strict";
+'use strict';
 
-const followRedirect = require("./follow-redirect-url");
+const followRedirect = require('./follow-redirect-url')
 
 exports.startFollowing = followRedirect.startFollowing;
