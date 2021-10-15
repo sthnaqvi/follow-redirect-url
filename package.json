@@ -1,6 +1,6 @@
 {
   "name": "follow-redirect-url",
-  "version": "1.0.5",
+  "version": "2.0.0",
   "description": "A simple command-line utility that lets you follow redirects to see where http URLs end up. Useful for shortened URLs.",
   "main": "lib.js",
   "dependencies": {
