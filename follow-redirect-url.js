@@ -3,7 +3,6 @@
 const fetch = require("node-fetch");
 const https = require("https");
 const http = require("http");
-fetch.Promise = Promise;
 
 const prefixWithHttp = (url) => {
   let pattern = new RegExp("^http");
@@ -68,12 +67,13 @@ const _startFollowingRecursively = (
   visits = []
 ) =>
   new Promise((resolve, reject) => {
-    //Default max_redirect_length = 20 and request_timeout = 10000 ms
+    //Default max_redirect_length = 20, request_timeout = 10000ms and ignoreSslErrors = flase
     const {
       max_redirect_length = 20,
       request_timeout = 10000,
       ignoreSslErrors = false,
     } = options;
+    
     const userAgent =
       "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.109 Safari/537.36";
     const fetchOptions = {
