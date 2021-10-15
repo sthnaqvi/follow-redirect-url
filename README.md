@@ -2,12 +2,15 @@
 
 [![NPM](https://nodei.co/npm/follow-redirect-url.png)](https://nodei.co/npm/follow-redirect-url/)
 
+[![Node version](https://img.shields.io/node/v/follow-redirect-url.svg?style=flat)](http://nodejs.org/download/)
 [![npm version](https://badge.fury.io/js/follow-redirect-url.png)](https://badge.fury.io/js/follow-redirect-url)
 [![Build Status](https://img.shields.io/travis/sthnaqvi/follow-redirect-url.svg?style=flat-square)](https://travis-ci.org/sthnaqvi/follow-redirect-url)
 [![Coverage](https://img.shields.io/codecov/c/github/sthnaqvi/follow-redirect-url.svg?style=flat-square)](https://codecov.io/github/sthnaqvi/follow-redirect-url)
 [![Dependency Status](https://img.shields.io/david/sthnaqvi/follow-redirect-url.svg?style=flat-square)](https://david-dm.org/sthnaqvi/follow-redirect-url)
 [![Known npm Vulnerabilities](https://img.shields.io/snyk/vulnerabilities/npm/follow-redirect-url.svg?label=npm%20vulnerabilities&style=flat-square)](https://snyk.io/test/npm/follow-redirect-url)
 [![Known Vulnerabilities](https://img.shields.io/snyk/vulnerabilities/github/sthnaqvi/follow-redirect-url.svg?label=repo%20vulnerabilities&style=flat-square&targetFile=package.json)](https://snyk.io/test/github/sthnaqvi/follow-redirect-url?targetFile=package.json)
+![Downloads Total](https://img.shields.io/npm/dt/follow-redirect-url.svg)
+![Downloads Monthly](https://img.shields.io/npm/dm/follow-redirect-url.svg)
 
 
 A simple command-line utility that lets you follow redirects to see where http URLs end up. Useful for shortened URLs.
