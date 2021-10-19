@@ -54,6 +54,6 @@
     "follow-redirect-url": "bin.js"
   },
   "engines": {
-    "node": ">=10 <16.0.0"
+    "node": ">=10 <17.0.0"
   }
 }
