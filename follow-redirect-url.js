@@ -3,7 +3,6 @@
 const fetch = require("node-fetch");
 const https = require("https");
 const http = require("http");
-fetch.Promise = Promise;
 
 const prefixWithHttp = (url) => {
   let pattern = new RegExp("^http");
