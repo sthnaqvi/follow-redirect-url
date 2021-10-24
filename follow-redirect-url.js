@@ -1,6 +1,8 @@
 "use strict";
 
 const fetch = require("node-fetch");
+const https = require("https");
+const http = require("http");
 
 const prefixWithHttp = (url) => {
   let pattern = new RegExp("^http");
@@ -65,8 +67,11 @@ const _startFollowingRecursively = (
   visits = []
 ) =>
   new Promise((resolve, reject) => {
-    //Default max_redirect_length = 20 and request_timeout = 10000 ms
-    const { max_redirect_length = 20, request_timeout = 10000 } = options;
+    const {
+      max_redirect_length = 20,
+      request_timeout = 10000,
+      ignoreSslErrors = false,
+    } = options;
     const userAgent =
       "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.109 Safari/537.36";
     const fetchOptions = {
@@ -77,6 +82,16 @@ const _startFollowingRecursively = (
         "User-Agent": userAgent,
         Accept: "text/html",
       },
+      // https://stackoverflow.com/questions/52478069/node-fetch-disable-ssl-verification
+      agent: (parsedUrl) => {
+        if (parsedUrl.protocol == "https:") {
+          return new https.Agent({
+            rejectUnauthorized: !ignoreSslErrors,
+          });
+        } else {
+          return new http.Agent();
+        }
+      }
     };
 
     if (count > max_redirect_length) {
@@ -95,7 +110,7 @@ const _startFollowingRecursively = (
         );
       })
       .catch((error) => {
-        visits.push({ url: url, redirect: false, status: `Error: ${error}` });
+        visits.push({ url: url, redirect: false, error: error.code, status: `Error: ${error}` });
         resolve(visits);
       });
   });

@@ -43,7 +43,7 @@ npm install -save follow-redirect-url
 
 
 ---
-## Usage 
+## Usage
 
 ### CLI:
 
@@ -105,26 +105,24 @@ https://github.com/sthnaqvi/follow-redirect-url -> 200
 ### Module options:
 The second argument is an `options` object. Options are optional.
 
-- `max_redirect_length` - maximum redirection limit (default: `20`)
-- `request_timeout` - request timeout in milliseconds (default: `10000`).
-- 
+- `max_redirect_length` - maximum redirection limit. Default: `20`
+- `request_timeout` - request timeout in milliseconds. Default: `10000`
+- `ignoreSslErrors` - ignore SSL certificate errors when following redirects. Default: `false`
+-
 ``` js
-'use strict';
-
 const followRedirect = require('follow-redirect-url');
 
- const options = {
-            max_redirect_length: 5,
-            request_timeout: 5000
-        };
-        
+const options = {
+    max_redirect_length: 5,
+    request_timeout: 5000,
+    ignoreSsslErrors: true
+};
+
 followRedirect.startFollowing('https://bit.ly/2X7gCIT', options).then(urls => {
     console.log(urls);
 }).catch(error => {
     console.log(error)
 })
 ```
+
 [back to top](#table-of-contents)
-
-
----

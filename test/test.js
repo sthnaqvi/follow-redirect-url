@@ -72,11 +72,25 @@ describe('follow-redirect-url', () => {
     });
   });
 
-  // it('should reject invalid URLs', () => {//TODO: Do it later
-  //   return follower.startFollowing('bogus://something').then(visits => {
-  //     return expect(visits).to.eventually.be.rejected;
-  //   });
-  // });
+  it('should reject invalid URLs', () => {
+    return follower.startFollowing('bogus://something').then(visits => {
+      return expect(visits).to.deep.oneOf([
+          [{
+            "error": "ENOTFOUND",
+            "redirect": false,
+            "status": "Error: FetchError: request to http://bogus//something failed, reason: getaddrinfo ENOTFOUND bogus",
+            "url": "bogus://something"
+          }],
+          // on GH CI runtime the exact error code is different
+          [{
+            "error": "EAI_AGAIN",
+            "redirect": false,
+            "status": "Error: FetchError: request to http://bogus//something failed, reason: getaddrinfo EAI_AGAIN bogus",
+            "url": "bogus://something"
+          }]
+        ])
+    });
+  });
 
   const expectedStatusCodesOnly = [
     {
