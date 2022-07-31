@@ -4,7 +4,7 @@
   "description": "A simple command-line utility that lets you follow redirects to see where http URLs end up. Useful for shortened URLs.",
   "main": "lib.js",
   "dependencies": {
-    "node-fetch": "^2.6.5"
+    "node-fetch": "^2.6.7"
   },
   "devDependencies": {
     "chai": "^4.3.4",
