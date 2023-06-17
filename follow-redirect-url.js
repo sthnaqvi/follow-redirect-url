@@ -23,6 +23,8 @@ const extractMetaRefreshUrl = (html) => {
   return match && match.length == 5 ? match[3] : null;
 };
 
+class MaxRedirectsError extends Error {}
+
 const visit = (url, fetchOptions) =>
   new Promise((resolve, reject) => {
     url = prefixWithHttp(url);
@@ -60,20 +62,16 @@ const visit = (url, fetchOptions) =>
       .catch(reject);
   });
 
-const _startFollowingRecursively = (
-  url,
-  options = {},
-  count = 1,
-  visits = []
-) =>
-  new Promise((resolve, reject) => {
+  const _startFollowingRecursively = async (url, options = {}, count = 1, visits = []) => {
     const {
       max_redirect_length = 20,
       request_timeout = 10000,
       ignoreSslErrors = false,
     } = options;
+
     const userAgent =
       "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.109 Safari/537.36";
+
     const fetchOptions = {
       redirect: "manual",
       follow: 0,
@@ -82,7 +80,6 @@ const _startFollowingRecursively = (
         "User-Agent": userAgent,
         Accept: "text/html",
       },
-      // https://stackoverflow.com/questions/52478069/node-fetch-disable-ssl-verification
       agent: (parsedUrl) => {
         if (parsedUrl.protocol == "https:") {
           return new https.Agent({
@@ -91,29 +88,32 @@ const _startFollowingRecursively = (
         } else {
           return new http.Agent();
         }
-      }
+      },
     };
 
     if (count > max_redirect_length) {
-      return reject(`Exceeded max redirect depth of ${max_redirect_length}`);
+      throw new MaxRedirectsError(`Exceeded max redirect depth of ${max_redirect_length}`);
     }
 
-    visit(url, fetchOptions)
-      .then((response) => {
-        count++;
-        visits.push(response);
-        url = response.redirectUrl;
-        resolve(
-          response.redirect
-            ? _startFollowingRecursively(url, options, count, visits)
-            : visits
-        );
-      })
-      .catch((error) => {
+    try {
+      const response = await visit(url, fetchOptions);
+      count++;
+      visits.push(response);
+      url = response.redirectUrl;
+
+      return response.redirect
+        ? await _startFollowingRecursively(url, options, count, visits)
+        : visits;
+    } catch (error) {
+      if (error instanceof MaxRedirectsError) {
+        throw error;
+      } else {
         visits.push({ url: url, redirect: false, error: error.code, status: `Error: ${error}` });
-        resolve(visits);
-      });
-  });
+        return visits;
+      }
+    }
+  };
+
 
 /**
  *
