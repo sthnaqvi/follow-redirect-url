@@ -24,43 +24,40 @@ const extractMetaRefreshUrl = (html) => {
 };
 
 class MaxRedirectsError extends Error {}
+class RedirectWithNoLocationError extends Error {}
 
-const visit = (url, fetchOptions) =>
-  new Promise((resolve, reject) => {
-    url = prefixWithHttp(url);
-    fetch(url, fetchOptions)
-      .then((response) => {
-        if (isRedirect(response.status)) {
-          const location = response.headers.get("location");
-          if (!location) {
-            throw `${url} responded with status ${response.status} but no location header`;
-          }
-          resolve({
-            url: url,
-            redirect: true,
-            status: response.status,
-            redirectUrl: response.headers.get("location"),
-          });
-        } else if (response.status == 200) {
-          response.text().then((text) => {
-            const redirectUrl = extractMetaRefreshUrl(text);
-            resolve(
-              redirectUrl
-                ? {
-                    url: url,
-                    redirect: true,
-                    status: "200 + META REFRESH",
-                    redirectUrl: redirectUrl,
-                  }
-                : { url: url, redirect: false, status: response.status }
-            );
-          });
-        } else {
-          resolve({ url: url, redirect: false, status: response.status });
+const visit = async (url, fetchOptions) => {
+  url = prefixWithHttp(url);
+  const response = await fetch(url, fetchOptions);
+
+  if (isRedirect(response.status)) {
+    const location = response.headers.get("location");
+
+    if (!location) {
+      throw new RedirectWithNoLocationError(`${url} responded with status ${response.status} but no location header`);
+    }
+
+    return {
+      url: url,
+      redirect: true,
+      status: response.status,
+      redirectUrl: location,
+    };
+  } else if (response.status === 200) {
+    const text = await response.text();
+    const redirectUrl = extractMetaRefreshUrl(text);
+    return redirectUrl
+      ? {
+          url: url,
+          redirect: true,
+          status: "200 + META REFRESH",
+          redirectUrl: redirectUrl,
         }
-      })
-      .catch(reject);
-  });
+      : { url: url, redirect: false, status: response.status };
+  } else {
+    return { url: url, redirect: false, status: response.status };
+  }
+};
 
   const _startFollowingRecursively = async (url, options = {}, count = 1, visits = []) => {
     const {
@@ -108,7 +105,8 @@ const visit = (url, fetchOptions) =>
       if (error instanceof MaxRedirectsError) {
         throw error;
       } else {
-        visits.push({ url: url, redirect: false, error: error.code, status: `Error: ${error}` });
+        const formattedErrorString = error instanceof RedirectWithNoLocationError ? `${error}` : `Error: ${error}`;
+        visits.push({ url: url, redirect: false, error: error.code, status: formattedErrorString });
         return visits;
       }
     }
