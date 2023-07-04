@@ -113,6 +113,9 @@ const visit = async (url, fetchOptions) => {
   };
 
 
+module.exports.MaxRedirectsError = MaxRedirectsError;
+module.exports.RedirectWithNoLocationError = RedirectWithNoLocationError;
+
 /**
  *
  * @param {String} url - pass url like http://google.com
@@ -120,5 +123,4 @@ const visit = async (url, fetchOptions) => {
  * @param {Number} options.max_redirect_length - set max redirect limit Default 20
  * @param {Number} options.request_timeout - request timeout in milliseconds Default 10000 ms
  */
-module.exports.startFollowing = (url, options) =>
-  _startFollowingRecursively(url, options);
+module.exports.startFollowing = _startFollowingRecursively
