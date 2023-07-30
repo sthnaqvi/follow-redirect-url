@@ -27,7 +27,7 @@ describe('follow-redirect-url', () => {
     return follower.startFollowing('http://localhost:9000/21').then(visits => {
       expect().to.throw();
     }).catch(error => {
-      expect(error).to.equal('Exceeded max redirect depth of 20');
+      expect(error.message).to.equal('Exceeded max redirect depth of 20');
     });
   });
 
@@ -43,7 +43,7 @@ describe('follow-redirect-url', () => {
     return follower.startFollowing('http://localhost:9000/6', options).then(visits => {
       expect().to.throw();
     }).catch(error => {
-      expect(error).to.equal('Exceeded max redirect depth of 5');
+      expect(error.message).to.equal('Exceeded max redirect depth of 5');
     });
   });
 

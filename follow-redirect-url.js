@@ -23,57 +23,52 @@ const extractMetaRefreshUrl = (html) => {
   return match && match.length == 5 ? match[3] : null;
 };
 
-const visit = (url, fetchOptions) =>
-  new Promise((resolve, reject) => {
-    url = prefixWithHttp(url);
-    fetch(url, fetchOptions)
-      .then((response) => {
-        if (isRedirect(response.status)) {
-          const location = response.headers.get("location");
-          if (!location) {
-            throw `${url} responded with status ${response.status} but no location header`;
-          }
-          resolve({
-            url: url,
-            redirect: true,
-            status: response.status,
-            redirectUrl: response.headers.get("location"),
-          });
-        } else if (response.status == 200) {
-          response.text().then((text) => {
-            const redirectUrl = extractMetaRefreshUrl(text);
-            resolve(
-              redirectUrl
-                ? {
-                    url: url,
-                    redirect: true,
-                    status: "200 + META REFRESH",
-                    redirectUrl: redirectUrl,
-                  }
-                : { url: url, redirect: false, status: response.status }
-            );
-          });
-        } else {
-          resolve({ url: url, redirect: false, status: response.status });
-        }
-      })
-      .catch(reject);
-  });
+class MaxRedirectsError extends Error {}
+class RedirectWithNoLocationError extends Error {}
 
-const _startFollowingRecursively = (
-  url,
-  options = {},
-  count = 1,
-  visits = []
-) =>
-  new Promise((resolve, reject) => {
+const visit = async (url, fetchOptions) => {
+  url = prefixWithHttp(url);
+  const response = await fetch(url, fetchOptions);
+
+  if (isRedirect(response.status)) {
+    const location = response.headers.get("location");
+
+    if (!location) {
+      throw new RedirectWithNoLocationError(`${url} responded with status ${response.status} but no location header`);
+    }
+
+    return {
+      url: url,
+      redirect: true,
+      status: response.status,
+      redirectUrl: location,
+    };
+  } else if (response.status === 200) {
+    const text = await response.text();
+    const redirectUrl = extractMetaRefreshUrl(text);
+    return redirectUrl
+      ? {
+          url: url,
+          redirect: true,
+          status: "200 + META REFRESH",
+          redirectUrl: redirectUrl,
+        }
+      : { url: url, redirect: false, status: response.status };
+  } else {
+    return { url: url, redirect: false, status: response.status };
+  }
+};
+
+  const _startFollowingRecursively = async (url, options = {}, count = 1, visits = []) => {
     const {
       max_redirect_length = 20,
       request_timeout = 10000,
       ignoreSslErrors = false,
     } = options;
+
     const userAgent =
       "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.109 Safari/537.36";
+
     const fetchOptions = {
       redirect: "manual",
       follow: 0,
@@ -82,7 +77,6 @@ const _startFollowingRecursively = (
         "User-Agent": userAgent,
         Accept: "text/html",
       },
-      // https://stackoverflow.com/questions/52478069/node-fetch-disable-ssl-verification
       agent: (parsedUrl) => {
         if (parsedUrl.protocol == "https:") {
           return new https.Agent({
@@ -91,29 +85,36 @@ const _startFollowingRecursively = (
         } else {
           return new http.Agent();
         }
-      }
+      },
     };
 
     if (count > max_redirect_length) {
-      return reject(`Exceeded max redirect depth of ${max_redirect_length}`);
+      throw new MaxRedirectsError(`Exceeded max redirect depth of ${max_redirect_length}`);
     }
 
-    visit(url, fetchOptions)
-      .then((response) => {
-        count++;
-        visits.push(response);
-        url = response.redirectUrl;
-        resolve(
-          response.redirect
-            ? _startFollowingRecursively(url, options, count, visits)
-            : visits
-        );
-      })
-      .catch((error) => {
-        visits.push({ url: url, redirect: false, error: error.code, status: `Error: ${error}` });
-        resolve(visits);
-      });
-  });
+    try {
+      const response = await visit(url, fetchOptions);
+      count++;
+      visits.push(response);
+      url = response.redirectUrl;
+
+      return response.redirect
+        ? await _startFollowingRecursively(url, options, count, visits)
+        : visits;
+    } catch (error) {
+      if (error instanceof MaxRedirectsError) {
+        throw error;
+      } else {
+        const formattedErrorString = error instanceof RedirectWithNoLocationError ? `${error}` : `Error: ${error}`;
+        visits.push({ url: url, redirect: false, error: error.code, status: formattedErrorString });
+        return visits;
+      }
+    }
+  };
+
+
+module.exports.MaxRedirectsError = MaxRedirectsError;
+module.exports.RedirectWithNoLocationError = RedirectWithNoLocationError;
 
 /**
  *
@@ -122,5 +123,4 @@ const _startFollowingRecursively = (
  * @param {Number} options.max_redirect_length - set max redirect limit Default 20
  * @param {Number} options.request_timeout - request timeout in milliseconds Default 10000 ms
  */
-module.exports.startFollowing = (url, options) =>
-  _startFollowingRecursively(url, options);
+module.exports.startFollowing = _startFollowingRecursively
